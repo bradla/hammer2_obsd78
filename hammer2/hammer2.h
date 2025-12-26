@@ -1571,7 +1571,7 @@ extern long hammer2_limit_dirty_chains;
 extern long hammer2_limit_dirty_inodes;
 extern long hammer2_count_modified_chains;
 extern int hammer2_limit_scan_depth;
-//extern int hammer2_limit_saved_chains;
+extern int hammer2_limit_saved_chains;
 extern int hammer2_always_compress;
 
 extern long hammer2_iod_file_read;
@@ -1767,7 +1767,8 @@ void hammer2_xop_inode_flush(hammer2_xop_t *, void *, int);
  * hammer2_iocom.c
  */
 void hammer2_iocom_init(hammer2_dev_t *hmp);
-void hammer2_iocom_uninit(hammer2_dev_t *hmp);
+//void hammer2_iocom_uninit(hammer2_dev_t *hmp);
+void hammer2_iocom_uninit(hammer2_pfs_t *);
 void hammer2_cluster_reconnect(hammer2_dev_t *hmp, struct file *fp);
 void hammer2_volconf_update(hammer2_dev_t *hmp, int index);
 
@@ -1840,6 +1841,7 @@ void hammer2_io_hash_init(hammer2_dev_t *);
 void hammer2_io_hash_destroy(hammer2_dev_t *);
 hammer2_io_t *hammer2_io_getblk(hammer2_dev_t *, int, hammer2_off_t, int, int);
 void hammer2_io_putblk(hammer2_io_t **);
+void _hammer2_io_putblk(hammer2_io_t **);
 void hammer2_io_hash_cleanup_all(hammer2_dev_t *);
 char *hammer2_io_data(hammer2_io_t *, hammer2_off_t);
 int hammer2_io_new(hammer2_dev_t *, int, hammer2_off_t, int, hammer2_io_t **);
@@ -2013,7 +2015,7 @@ static __inline void
 hammer2_xop_pdata(hammer2_xop_head_t *xop)
 {
 	if (xop->focus_dio)
-		hammer2_io_putblk(&xop->focus_dio);
+		_hammer2_io_putblk(&xop->focus_dio);
 }
 
 static __inline void

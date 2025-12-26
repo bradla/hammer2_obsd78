@@ -80,7 +80,7 @@ int hammer2_count_dio_allocated;
 int hammer2_dio_limit = 256;
 int hammer2_bulkfree_tps = 5000;
 int hammer2_limit_scan_depth;
-int hammer2_limit_saved_chains;
+int hammer2_limit_saved_chains=0;
 int hammer2_always_compress = 0;
 
 /* not sysctl */
@@ -1234,7 +1234,8 @@ again:
 	 * Decomission the network before we start messing with the
 	 * device and PFS.
 	 */
-	hammer2_iocom_uninit(hmp);
+	//hammer2_iocom_uninit(hmp);
+	// XXX fix me hammer2_iocom_uninit(pmp);
 
 	hammer2_bulkfree_uninit(hmp);
 	hammer2_pfsfree_scan(hmp, 0);

@@ -224,13 +224,13 @@ hammer2_chain_init(hammer2_chain_t *chain)
  * Undone via hammer2_chain_drop().
  * Can be called with spinlock held.
  */
-//void
-//hammer2_chain_ref(hammer2_chain_t *chain)
-//{
-//	if (atomic_fetchadd_int(&chain->refs, 1) == 0) {
+void
+hammer2_chain_ref(hammer2_chain_t *chain)
+{
+	if (atomic_fetchadd_int(&chain->refs, 1) == 0) {
 		/* NOP */
-//	}
-//}
+	}
+}
 
 /*
  * Ref a locked chain and force the data to be held across an unlock.

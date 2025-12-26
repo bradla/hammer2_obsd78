@@ -365,6 +365,101 @@ _hammer2_io_putblk(hammer2_io_t **diop HAMMER2_IO_DEBUG_ARGS)
 	hammer2_mtx_unlock(&hmp->iohash_lock);
 }
 
+void
+hammer2_io_putblk(hammer2_io_t **diop)
+{
+	hammer2_dev_t *hmp;
+	hammer2_io_t *dio;
+	struct buf *bp;
+	uint64_t orefs;
+	int dio_limit;
+
+	dio = *diop;
+	*diop = NULL;
+
+	hammer2_mtx_ex(&dio->lock);
+	if ((dio->refs & HAMMER2_DIO_MASK) == 0) {
+		hammer2_mtx_unlock(&dio->lock);
+		return; /* lost race */
+	}
+	hammer2_assert_io_refs(dio);
+
+	/*
+	 * Drop refs.
+	 * On the 1->0 transition clear DIO_GOOD.
+	 * On any other transition we can return early.
+	 */
+	orefs = dio->refs;
+	if ((dio->refs & HAMMER2_DIO_MASK) == 1) {
+		dio->refs--;
+		dio->refs &= ~(HAMMER2_DIO_GOOD | HAMMER2_DIO_DIRTY);
+	} else {
+		dio->refs--;
+		hammer2_mtx_unlock(&dio->lock);
+		return;
+	}
+
+	/* Lastdrop (1->0 transition) case. */
+	hmp = dio->hmp;
+	bp = dio->bp;
+	dio->bp = NULL;
+
+	/* Write out and dispose of buffer. */
+	if ((orefs & HAMMER2_DIO_GOOD) && bp) {
+		/* Non-errored disposal of buffer. */
+		if (orefs & HAMMER2_DIO_DIRTY) {
+			/*
+			 * Allows dirty buffers to accumulate and
+			 * possibly be canceled (e.g. by a 'rm'),
+			 * by default we will burst-write later.
+			 *
+			 * We generally do NOT want to issue an actual
+			 * b[a]write() or cluster_write() here.  Due to
+			 * the way chains are locked, buffers may be cycled
+			 * in and out quite often and disposal here can cause
+			 * multiple writes or write-read stalls.
+			 *
+			 * If FLUSH is set we do want to issue the actual
+			 * write.  This typically occurs in the write-behind
+			 * case when writing to large files.
+			 */
+			/* No cluster_write() in OpenBSD. */
+			if (dio->refs & HAMMER2_DIO_FLUSH)
+				bawrite(bp);
+			else
+				bdwrite(bp);
+			hammer2_inc_iostat(&hmp->iostat_write, dio->btype,
+			    dio->psize);
+		} else {
+			bqrelse(bp);
+		}
+	} else if (bp) {
+		/* Errored disposal of buffer. */
+		brelse(bp);
+	}
+
+	/* Update iofree_count before disposing of the dio. */
+	atomic_add_int(&hmp->iofree_count, 1);
+
+	KKASSERT(!(dio->refs & HAMMER2_DIO_GOOD));
+	hammer2_mtx_unlock(&dio->lock);
+	/* Another process may come in and get/put this dio. */
+
+	/*
+	 * We cache free buffers so re-use cases can use a shared lock,
+	 * but if too many build up we have to clean them out.
+	 */
+	hammer2_mtx_ex(&hmp->iohash_lock);
+	dio_limit = hammer2_dio_limit;
+	if (dio_limit < 256)
+		dio_limit = 256;
+	if (dio_limit > 1024*1024)
+		dio_limit = 1024*1024;
+	if (hmp->iofree_count > dio_limit)
+		hammer2_io_hash_cleanup(hmp, dio_limit);
+	hammer2_mtx_unlock(&hmp->iohash_lock);
+}
+
 char *
 hammer2_io_data(hammer2_io_t *dio, hammer2_off_t lbase)
 {

@@ -37,9 +37,6 @@
 
 #include "hammer2.h"
 
-long hammer2_limit_saved_chains;
-// XXX long here vfsops int
-
 void hammer2_chain_ref(hammer2_chain_t *);
 
 /* breadth-first search */
@@ -256,9 +253,9 @@ hammer2_bulkfree_scan(hammer2_chain_t *parent,
 				    hammer2_limit_saved_chains &&
 				    info->list_alert == 0) {
 					hprintf("during bulkfree, saved chains "
-					    "exceeded %ld at depth %d, backing "
+					    "exceeded at depth %d, backing "
 					    "off to less-efficient operation\n",
-					    hammer2_limit_saved_chains,
+					    //XXXhammer2_limit_saved_chains,
 					    info->depth);
 					info->list_alert = 1;
 				}

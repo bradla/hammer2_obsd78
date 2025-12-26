@@ -63,13 +63,21 @@ hammer2_iocom_init(hammer2_dev_t *hmp)
 			 hmp->mmsg, hammer2_rcvdmsg);
 }
 
+/* OpenBSD: HAMMER2 has no iocom / kdmsg support */
 void
+hammer2_iocom_uninit(hammer2_pfs_t *pmp)
+{
+        (void)pmp;
+}
+
+/*void
 hammer2_iocom_uninit(hammer2_dev_t *hmp)
 {
-	/* XXX chain depend deadlck? */
+	// XXX chain depend deadlck? 
 	if (hmp->iocom.mmsg)
 		kdmsg_iocom_uninit(&hmp->iocom);
 }
+*/
 
 /*
  * Reconnect using the passed file pointer.  The caller must ref the
