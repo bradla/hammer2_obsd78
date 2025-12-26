@@ -43,7 +43,7 @@
 #include <sys/uio.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
-#include <sys/file.h>
+//#include <sys/file.h>
 #include <sys/specdev.h>
 
 #include <miscfs/fifofs/fifo.h>

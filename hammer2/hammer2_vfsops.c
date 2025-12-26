@@ -42,7 +42,7 @@
 #include <sys/specdev.h>
 
 
-
+#define	NULLVP	((struct vnode *)NULL)
 
 static int hammer2_unmount(struct mount *, int, struct proc *);
 static int hammer2_recovery(hammer2_dev_t *);
@@ -1703,7 +1703,7 @@ restart:
 		depend_next = TAILQ_NEXT(depend, entry);
 		if (dorestart && depend->pass2 == 0)
 			continue;
-		TAILQ_FOREACH(ip, &depend->sideq, qentry) {
+		TAILQ_FOREACH(ip, &depend->sideq, entry) {
 			KKASSERT(ip->flags & HAMMER2_INODE_SIDEQ);
 			atomic_set_int(&ip->flags, HAMMER2_INODE_SYNCQ);
 			atomic_clear_int(&ip->flags, HAMMER2_INODE_SIDEQ);
@@ -1711,7 +1711,7 @@ restart:
 		}
 
 		/* NOTE: pmp->sideq_count includes both sideq and syncq */
-		TAILQ_CONCAT(&pmp->syncq, &depend->sideq, qentry);
+		TAILQ_CONCAT(&pmp->syncq, &depend->sideq, entry);
 
 		depend->count = 0;
 		depend->pass2 = 0;
@@ -1742,7 +1742,7 @@ restart:
 		    (pass2 & ~(HAMMER2_INODE_SYNCQ | HAMMER2_INODE_SYNCQ_WAKEUP)) |
 		    HAMMER2_INODE_SYNCQ_PASS2) == 0)
 			continue;
-		TAILQ_REMOVE(&pmp->syncq, ip, qentry);
+		TAILQ_REMOVE(&pmp->syncq, ip, entry);
 		--pmp->sideq_count;
 		hammer2_spin_unex(&pmp->list_spin);
 

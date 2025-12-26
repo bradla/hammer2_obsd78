@@ -1023,6 +1023,7 @@ hammer2_ioctl_growfs(hammer2_inode_t *ip, void *data)
 /*
  * Get a list of volumes.
  */
+/*
 static int
 hammer2_ioctl_volume_list(hammer2_inode_t *ip, void *data)
 {
@@ -1040,7 +1041,7 @@ hammer2_ioctl_volume_list(hammer2_inode_t *ip, void *data)
 			break;
 		vol = &hmp->volumes[i];
 		bzero(&entry, sizeof(entry));
-		/* Copy hammer2_volume_t fields. */
+		// Copy hammer2_volume_t fields. 
 		entry.id = vol->id;
 		bcopy(vol->dev->path, entry.path, sizeof(entry.path));
 		entry.offset = vol->offset;
@@ -1057,15 +1058,16 @@ hammer2_ioctl_volume_list(hammer2_inode_t *ip, void *data)
 
 	return (error);
 }
+*/
 
 /*
  * Get a list of volumes (version 2).
  */
 static int
-hammer2_ioctl_volume_list2(hammer2_inode_t *ip, void *data)
+hammer2_ioctl_volume_list(hammer2_inode_t *ip, void *data)
 {
-	hammer2_ioc_volume_list2_t *vollist = data;
-	hammer2_ioc_volume2_t *entry;
+	hammer2_ioc_volume_list_t *vollist = data;
+	hammer2_ioc_volume_t *entry;
 	hammer2_volume_t *vol;
 	hammer2_dev_t *hmp = ip->pmp->pfs_hmps[0];
 	int i, error = 0, cnt = 0;
@@ -1143,9 +1145,9 @@ hammer2_ioctl_impl(struct vnode *vp, unsigned long com, void *data,
 	case HAMMER2IOC_VOLUME_LIST:
 		error = hammer2_ioctl_volume_list(ip, data);
 		break;
-	case HAMMER2IOC_VOLUME_LIST2:
-		error = hammer2_ioctl_volume_list2(ip, data);
-		break;
+	//case HAMMER2IOC_VOLUME_LIST2:
+	//	error = hammer2_ioctl_volume_list2(ip, data);
+	//	break;
 #if 0
 	case FIOSEEKDATA:
 	case FIOSEEKHOLE:

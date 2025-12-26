@@ -271,7 +271,7 @@ hammer2_io_getblk(hammer2_dev_t *hmp, int btype, hammer2_off_t lbase, int lsize,
  * On the 1->0 transition we clear DIO_GOOD and dispose of dio->bp.
  */
 void
-hammer2_io_putblk(hammer2_io_t **diop)
+_hammer2_io_putblk(hammer2_io_t **diop HAMMER2_IO_DEBUG_ARGS)
 {
 	hammer2_dev_t *hmp;
 	hammer2_io_t *dio;
@@ -677,7 +677,7 @@ hammer2_io_hash_cleanup_all(hammer2_dev_t *hmp)
 #define HAMMER2_DEDUP_FRAG	(HAMMER2_PBUFSIZE / 64)
 #define HAMMER2_DEDUP_FRAGRADIX	(HAMMER2_PBUFRADIX - 6)
 
-uint64_t
+/*uint64_t
 hammer2_dedup_mask(hammer2_io_t *dio, hammer2_off_t data_off, u_int bytes)
 {
 	int bbeg, bits;
@@ -695,7 +695,7 @@ hammer2_dedup_mask(hammer2_io_t *dio, hammer2_off_t data_off, u_int bytes)
 	mask &= ~(((uint64_t)1 << bbeg) - 1);
 
 	return (mask);
-}
+} */
 
 /*
  * Set dedup validation bits in a DIO.  We do not need the buffer cache

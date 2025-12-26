@@ -37,6 +37,9 @@
 
 #include "hammer2.h"
 
+long hammer2_limit_saved_chains;
+// XXX long here vfsops int
+
 void hammer2_chain_ref(hammer2_chain_t *);
 
 /* breadth-first search */

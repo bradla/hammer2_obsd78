@@ -62,6 +62,7 @@ struct hammer2_mount_info {
 	int		hflags;		/* extended hammer2 mount flags */
 	int		cluster_fd;	/* cluster management pipe/socket */
 	char		reserved1[112];
+        void            *fspec;
 };
 
 #define HMNT2_UNUSED01		0x00000001

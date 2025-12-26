@@ -270,7 +270,14 @@ struct hammer2_io {
 	struct buf	*bp;
 	off_t		dbase;		/* offset of devvp within volumes */
 	off_t		pbase;
-	uint64_t	refs;
+	//XXX FIX ME uint64_t	refs;
+	u_int32_t       refs;
+#ifdef USE_MTX
+    struct mtx lock;
+#else
+    //struct spinlock lock;
+    hammer2_mtx_t lock;
+#endif
 	int		psize;
 	int		act;		/* activity */
 	int		btype;		/* approximate BREF_TYPE_* */
@@ -962,6 +969,7 @@ struct hammer2_xop_strategy {
 	int			finished;
 	hammer2_mtx_t		lock;
 	struct bio		*bio;
+	struct buf		*bp;
 };
 struct hammer2_xop_readdir {
 	hammer2_xop_head_t	head;
@@ -1551,14 +1559,14 @@ extern int hammer2_bulkfree_tps;
 extern int hammer2_spread_workers;
 extern int hammer2_limit_saved_depth;
 extern long hammer2_chain_allocs;
-extern long hammer2_limit_saved_chains;
+//extern long hammer2_limit_saved_chains;
 extern long hammer2_limit_dirty_chains;
 extern long hammer2_limit_dirty_inodes;
 extern long hammer2_count_modified_chains;
 extern int hammer2_spread_workers;
 extern int hammer2_limit_saved_depth;
 extern long hammer2_chain_allocs;
-extern long hammer2_limit_saved_chains;
+//extern long hammer2_limit_saved_chains;
 extern long hammer2_limit_dirty_chains;
 extern long hammer2_limit_dirty_inodes;
 extern long hammer2_count_modified_chains;
