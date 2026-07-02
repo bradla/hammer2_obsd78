@@ -161,9 +161,10 @@ hammer2_bread(hammer2_dev_t *hmp, hammer2_io_t *dio, daddr_t lblkno)
 	int error;
 
 	error = bread(dio->devvp, lblkno, dio->psize, &dio->bp);
-	if (error)
+	if (error) {
 		brelse(dio->bp);
-	else
+		dio->bp = NULL;
+	} else
 		hammer2_inc_iostat(&hmp->iostat_read, dio->btype, dio->psize);
 
 	return (error);
@@ -186,8 +187,10 @@ hammer2_io_getblk(hammer2_dev_t *hmp, int btype, hammer2_off_t lbase, int lsize,
 	hammer2_mtx_ex(&hmp->iohash_lock);
 	if (op == HAMMER2_DOP_READQ) {
 		dio = hammer2_io_alloc(hmp, lbase, btype, 0);
-		if (dio == NULL)
+		if (dio == NULL) {
+			hammer2_mtx_unlock(&hmp->iohash_lock);
 			return (NULL);
+		}
 		op = HAMMER2_DOP_READ;
 	} else {
 		dio = hammer2_io_alloc(hmp, lbase, btype, 1);
@@ -519,21 +522,21 @@ hammer2_io_getquick(hammer2_dev_t *hmp, off_t lbase, int lsize)
 void
 hammer2_io_bawrite(hammer2_io_t **diop)
 {
-	atomic_set_32(&(*diop)->refs, HAMMER2_DIO_DIRTY | HAMMER2_DIO_FLUSH);
+	atomic_set_64(&(*diop)->refs, HAMMER2_DIO_DIRTY | HAMMER2_DIO_FLUSH);
 	hammer2_io_putblk(diop);
 }
 
 void
 hammer2_io_bdwrite(hammer2_io_t **diop)
 {
-	atomic_set_32(&(*diop)->refs, HAMMER2_DIO_DIRTY);
+	atomic_set_64(&(*diop)->refs, HAMMER2_DIO_DIRTY);
 	hammer2_io_putblk(diop);
 }
 
 int
 hammer2_io_bwrite(hammer2_io_t **diop)
 {
-	atomic_set_32(&(*diop)->refs, HAMMER2_DIO_DIRTY | HAMMER2_DIO_FLUSH);
+	atomic_set_64(&(*diop)->refs, HAMMER2_DIO_DIRTY | HAMMER2_DIO_FLUSH);
 	hammer2_io_putblk(diop);
 
 	return (0); /* XXX */
@@ -542,7 +545,7 @@ hammer2_io_bwrite(hammer2_io_t **diop)
 void
 hammer2_io_setdirty(hammer2_io_t *dio)
 {
-	atomic_set_32(&dio->refs, HAMMER2_DIO_DIRTY);
+	atomic_set_64(&dio->refs, HAMMER2_DIO_DIRTY);
 }
 
 /*

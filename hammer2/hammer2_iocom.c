@@ -39,7 +39,7 @@
 #include <sys/uuid.h>
 #include <sys/socket.h>
 #include <sys/proc.h>
-#include <sys/file.h>
+/* <sys/file.h> is unguarded and is pulled in by hammer2.h below. */
 
 #include "hammer2.h"
 #include "kdmsg.c"

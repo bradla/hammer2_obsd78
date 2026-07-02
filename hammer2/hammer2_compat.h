@@ -73,6 +73,13 @@
 #define atomic_set_32		atomic_set_int
 #define atomic_add_32		atomic_add_int
 
+/*
+ * 64-bit atomic OR.  hammer2_io.refs packs the DIO_* flag bits (DIO_GOOD,
+ * DIO_DIRTY, ...) in the high bits of a 64-bit word, so a 32-bit set would
+ * silently drop them.  x86_atomic_setbits_u64 comes from <machine/atomic.h>.
+ */
+#define atomic_set_64		x86_atomic_setbits_u64
+
 #define atomic_cmpset_int(ptr, old, new)	\
 	(atomic_cas_uint((ptr), (old), (new)) == (old))
 

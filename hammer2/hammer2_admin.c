@@ -89,8 +89,8 @@ hammer2_xop_fifo_alloc(hammer2_xop_fifo_t *fifo, size_t new_nmemb,
 	/* Assert new vs old nmemb requirements. */
 	KASSERT(new_nmemb > old_nmemb);
 	if (old_nmemb == 0) {
-		//KASSERT(!fifo->array && !fifo->errors);
-	//else
+		KASSERT(!fifo->array && !fifo->errors);
+	} else {
 		KKASSERT(fifo->array);
 		KKASSERT(fifo->errors);
 	}
@@ -413,8 +413,8 @@ hammer2_xop_retire(hammer2_xop_head_t *xop, uint32_t mask)
 		}
 		for (i = 0; i < xop->cluster.nchains; ++i) {
 			ip->ccache[i] = xop->cluster.array[i];
-			//if (ip->ccache[i].chain)
-				//(ip->ccache[i].chain);
+			if (ip->ccache[i].chain)
+				hammer2_chain_ref(ip->ccache[i].chain);
 		}
 		ip->ccache_nchains = i;
 		hammer2_spin_unex(&ip->cluster_spin);
@@ -549,8 +549,8 @@ hammer2_xop_feed(hammer2_xop_head_t *xop, hammer2_chain_t *chain, int clindex,
 		hammer2_xop_fifo_alloc(fifo, xop->fifo_size, old_fifo_size);
 	}
 
-	//if (chain)
-	//	hammer2_chain_ref_hold(chain);
+	if (chain)
+		hammer2_chain_ref_hold(chain);
 	if (error == 0 && chain)
 		error = chain->error;
 	fifo->errors[fifo->wi & fifo_mask(xop)] = error;

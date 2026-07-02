@@ -290,7 +290,7 @@ hammer2_bulkfree_scan(hammer2_chain_t *parent,
 				save = hmalloc(sizeof(*save), M_HAMMER2,
 				    M_WAITOK | M_ZERO);
 				save->chain = chain;
-				//hammer2_chain_ref(chain);
+				hammer2_chain_ref(chain);
 
 				if (info->backout)
 					TAILQ_INSERT_AFTER(&info->list,
@@ -866,7 +866,7 @@ h2_bulkfree_sync(hammer2_bulkfree_info_t *cbinfo)
 	bmap = cbinfo->bmap;
 
 	live_parent = &cbinfo->hmp->fchain;
-	//hammer2_chain_ref(live_parent);
+	hammer2_chain_ref(live_parent);
 	hammer2_chain_lock(live_parent, HAMMER2_RESOLVE_ALWAYS);
 	live_chain = NULL;
 	error = 0;

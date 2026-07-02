@@ -270,8 +270,7 @@ struct hammer2_io {
 	struct buf	*bp;
 	off_t		dbase;		/* offset of devvp within volumes */
 	off_t		pbase;
-	//XXX FIX ME uint64_t	refs;
-	u_int32_t       refs;
+	uint64_t	refs;		/* DIO_MASK ref count + high DIO_* flag bits */
 #ifdef USE_MTX
     struct mtx lock;
 #else

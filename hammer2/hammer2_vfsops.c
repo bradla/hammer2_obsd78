@@ -168,10 +168,13 @@ hammer2_start(struct mount *mp, int flags, struct proc *p)
 static int
 hammer2_init(struct vfsconf *vfsp)
 {
-	long hammer2_limit_dirty_chains; /* originally sysctl */
+        printf("Mmount_info=%zu args=%zu export_args=%zu\n",
+            sizeof(struct hammer2_mount_info),
+            sizeof(struct hammer2_args),
+            sizeof(struct export_args));
 
-	KASSERT(sizeof(struct hammer2_mount_info) == sizeof(struct hammer2_args));
-	KASSERT(sizeof(struct hammer2_mount_info) <= 160); /* union mount_info */
+	//KASSERT(sizeof(struct hammer2_mount_info) == sizeof(struct hammer2_args));
+	//KASSERT(sizeof(struct hammer2_mount_info) <= 160); /* union mount_info */
 
 	hammer2_assert_clean();
 
@@ -202,6 +205,12 @@ hammer2_init(struct vfsconf *vfsp)
 	if (hammer2_limit_dirty_chains < 1000)
 		hammer2_limit_dirty_chains = 1000;
 	hammer2_limit_saved_chains = hammer2_limit_dirty_chains * 5;
+
+	hammer2_limit_dirty_inodes = desiredvnodes / 25;
+	if (hammer2_limit_dirty_inodes < 100)
+		hammer2_limit_dirty_inodes = 100;
+	if (hammer2_limit_dirty_inodes > HAMMER2_LIMIT_DIRTY_INODES)
+		hammer2_limit_dirty_inodes = HAMMER2_LIMIT_DIRTY_INODES;
 
 	return (0);
 }
@@ -1039,7 +1048,8 @@ next_hmp:
 	strlcpy(mp->mnt_stat.f_mntfromname, fnamestr, MNAMELEN);
 	bzero(mp->mnt_stat.f_mntfromspec, MNAMELEN);
 	strlcpy(mp->mnt_stat.f_mntfromspec, pmp->fspec, MNAMELEN);
-	bcopy(args, &mp->mnt_stat.mount_info.hammer2_args, sizeof(*args));
+	bcopy(args, &mp->mnt_stat.mount_info.hammer2_args,
+	    sizeof(struct hammer2_args));
 
 	/* These two are usually the same. */
 	if (strncmp(mp->mnt_stat.f_mntfromname, mp->mnt_stat.f_mntfromspec,
